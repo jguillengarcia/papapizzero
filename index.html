@@ -1224,6 +1224,22 @@
           </div>
         </div>
 
+        <div class="q-row hidden" id="horno-row-wizard">
+          <span class="q-label">¿Qué tipo de horno usas?</span>
+          <div class="knead-cards">
+            <div class="knead-card" id="oc-domestico" onclick="selectHorno('domestico')">
+              <div class="kc-icon">🏠</div>
+              <span class="kc-title">Horno doméstico</span>
+              <span class="kc-sub">Hasta 250-280 °C. Hidratación 60-62% recomendada</span>
+            </div>
+            <div class="knead-card" id="oc-semipro" onclick="selectHorno('semipro')">
+              <div class="kc-icon">🔥</div>
+              <span class="kc-title">Semiprofesional</span>
+              <span class="kc-sub">300 °C o más. Permite mayor hidratación</span>
+            </div>
+          </div>
+        </div>
+
         <div class="q-row hidden" id="hyd-row-wizard">
           <span class="q-label">¿Qué hidratación quieres usar?</span>
           <div id="hyd-options-wizard" class="hyd-options"></div>
@@ -1425,6 +1441,18 @@
         </div>
 
         <div class="ctrl-group">
+          <span class="ctrl-label">Tipo de horno</span>
+          <div class="ctrl-row">
+            <button class="ctrl-btn active" id="adv-horno-domestico" onclick="setAdvHorno('domestico')">🏠 Doméstico</button>
+            <button class="ctrl-btn"        id="adv-horno-semipro"   onclick="setAdvHorno('semipro')">🔥 Semiprofesional</button>
+          </div>
+          <div id="adv-horno-hint" class="info-note" style="margin-top:8px;padding:10px 12px;font-size:0.78rem;">
+            <span class="note-icon">🌡️</span>
+            <span>Horno doméstico: hasta 250-280 °C — hidratación recomendada 60-62%.</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
           <span class="ctrl-label">Hidratación</span>
           <div class="hyd-options" id="adv-hyd-options"></div>
           <div class="hyd-custom-wrap">
@@ -1605,13 +1633,23 @@ const FERMENTATION = [
    STATE
 ════════════════════════════════════════════════ */
 const HYD_OPTIONS = {
-  mano:    [{ v:57, label:'Napolitana auténtica', best:true }],
-  maquina: [
-    { v:57, label:'Napolitana auténtica', best:false },
-    { v:60, label:'Clásica',             best:false },
-    { v:63, label:'Equilibrada',         best:false },
-    { v:67, label:'Contemporánea',       best:false }
-  ]
+  mano: {
+    domestico: [{ v:57, label:'Napolitana auténtica', best:true }],
+    semipro:   [{ v:57, label:'Napolitana auténtica', best:true }]
+  },
+  maquina: {
+    domestico: [
+      { v:57, label:'Napolitana auténtica', best:false },
+      { v:60, label:'Recomendada',          best:true  },
+      { v:62, label:'Máximo doméstico',     best:false }
+    ],
+    semipro: [
+      { v:57, label:'Napolitana auténtica', best:false },
+      { v:60, label:'Clásica',              best:false },
+      { v:63, label:'Equilibrada',          best:true  },
+      { v:67, label:'Contemporánea',        best:false }
+    ]
+  }
 };
 
 const state = {
@@ -1620,6 +1658,7 @@ const state = {
   step:    1,
   pizzas:  3,
   metodo:  null,
+  horno:   null,
   hidratacion: null,
   tiempo:  null,
   flour:   null,
@@ -1635,7 +1674,8 @@ const state = {
     season:     'invierno',
     temp:       22,
     yeastDry:   false,
-    metodo:     'mano',
+    metodo:      'mano',
+    horno:       'domestico',
     hidratacion: 57
   }
 };
@@ -1672,7 +1712,7 @@ function setMode(mode) {
 ════════════════════════════════════════════════ */
 function goStep(n) {
   // Validate before advancing
-  if (n === 2 && (!state.tiempo || !state.metodo || !state.hidratacion)) { shakeEl('step-1'); return; }
+  if (n === 2 && (!state.tiempo || !state.metodo || !state.horno || !state.hidratacion)) { shakeEl('step-1'); return; }
   if (n === 3 && !state.flour)  { shakeEl('step-2'); return; }
 
   // Hide all steps
@@ -1711,21 +1751,41 @@ function selectTime(h) {
 function selectMetodo(m) {
   state.metodo = m;
   ['mano','maquina'].forEach(v => document.getElementById('kc-' + v).classList.toggle('selected', v === m));
-  // Auto-set hydration: mano always 57, maquina default 57
-  state.hidratacion = 57;
-  buildWizHydOptions(m);
+  // For mano: skip oven selector, go straight to hydration (fixed 57%)
+  if (m === 'mano') {
+    state.horno = 'domestico'; // irrelevant but set for consistency
+    state.hidratacion = 57;
+    document.getElementById('horno-row-wizard').classList.add('hidden');
+    buildWizHydOptions('mano', 'domestico');
+    document.getElementById('hyd-row-wizard').classList.remove('hidden');
+  } else {
+    // Show oven selector first; hide hydration until oven is chosen
+    state.horno = null;
+    state.hidratacion = null;
+    document.getElementById('horno-row-wizard').classList.remove('hidden');
+    document.getElementById('hyd-row-wizard').classList.add('hidden');
+    ['domestico','semipro'].forEach(v => document.getElementById('oc-' + v).classList.remove('selected'));
+  }
+}
+
+function selectHorno(h) {
+  state.horno = h;
+  ['domestico','semipro'].forEach(v => document.getElementById('oc-' + v).classList.toggle('selected', v === h));
+  // Default hydration: domestico→60, semipro→63
+  state.hidratacion = h === 'domestico' ? 60 : 63;
+  buildWizHydOptions(state.metodo, h);
   document.getElementById('hyd-row-wizard').classList.remove('hidden');
 }
 
-function buildWizHydOptions(metodo) {
+function buildWizHydOptions(metodo, horno) {
   const wrap = document.getElementById('hyd-options-wizard');
   wrap.innerHTML = '';
-  const opts = HYD_OPTIONS[metodo];
   if (metodo === 'mano') {
     wrap.innerHTML = `<div class="hyd-fixed">🤲 <strong>57%</strong> — Napolitana auténtica. Máximo recomendado para amasado a mano.</div>`;
     state.hidratacion = 57;
     return;
   }
+  const opts = HYD_OPTIONS[metodo][horno];
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'hyd-btn' + (opt.v === state.hidratacion ? ' selected' : '') + (opt.best ? ' best-hyd' : '');
@@ -1739,10 +1799,25 @@ function buildWizHydOptions(metodo) {
   });
 }
 
+function setAdvHorno(h) {
+  state.adv.horno = h;
+  ['domestico','semipro'].forEach(v => document.getElementById('adv-horno-' + v).classList.toggle('active', v === h));
+  const hint = document.getElementById('adv-horno-hint');
+  hint.querySelector('span:last-child').textContent = h === 'domestico'
+    ? 'Horno doméstico: hasta 250-280 °C — hidratación recomendada 60-62%.'
+    : 'Horno semiprofesional: 300 °C o más — permite hidrataciones más altas.';
+  // Reset hydration to default for this oven/metodo combo
+  if (state.adv.metodo === 'maquina') {
+    state.adv.hidratacion = h === 'domestico' ? 60 : 63;
+  }
+  buildAdvHydOptions();
+  advRecalc();
+}
+
 function buildAdvHydOptions() {
   const wrap = document.getElementById('adv-hyd-options');
   wrap.innerHTML = '';
-  const opts = HYD_OPTIONS[state.adv.metodo];
+  const opts = HYD_OPTIONS[state.adv.metodo][state.adv.horno];
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'hyd-btn' + (opt.v === state.adv.hidratacion ? ' selected' : '');
@@ -1782,9 +1857,9 @@ function advHydSliderChange() {
 function setAdvMetodo(m) {
   state.adv.metodo = m;
   ['mano','maquina'].forEach(v => document.getElementById('adv-knead-' + v).classList.toggle('active', v === m));
-  // Reset hydration to 57 when switching methods
-  state.adv.hidratacion = 57;
+  state.adv.hidratacion = m === 'mano' ? 57 : (state.adv.horno === 'domestico' ? 60 : 63);
   buildAdvHydOptions();
+  syncHydSlider(state.adv.hidratacion);
   advRecalc();
 }
 
@@ -1884,7 +1959,7 @@ function toggleYeast(mode) {
 
 function resetWizard() {
   state.step = 1; state.tiempo = null; state.flour = null; state.season = null; state.temp = null;
-  state.metodo = null; state.hidratacion = null;
+  state.metodo = null; state.horno = null; state.hidratacion = null;
   state.yeastDry_wiz = false;
   document.getElementById('yeast-toggle-wiz').checked = false;
   [8,24,48].forEach(t => document.getElementById('tc-'+t).classList.remove('selected'));
@@ -1893,8 +1968,10 @@ function resetWizard() {
   document.getElementById('temp-display-wizard').textContent = '—';
   document.querySelectorAll('#temp-buttons-wizard .temp-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('pizza-count-display').textContent = 3;
+  document.getElementById('horno-row-wizard').classList.add('hidden');
   document.getElementById('hyd-row-wizard').classList.add('hidden');
   document.getElementById('hyd-options-wizard').innerHTML = '';
+  ['domestico','semipro'].forEach(v => document.getElementById('oc-' + v).classList.remove('selected'));
   state.pizzas = 3;
   goStep(1);
 }
