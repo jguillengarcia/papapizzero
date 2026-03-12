@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papapizzero — Calculadora de Masa Napolitana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ─── VARIABLES ─────────────────────────────────────────── */
+  :root {
+    --cream:    #FDF8F0;
+    --cream2:   #F5EDD9;
+    --red:      #C0392B;
+    --red-dark: #962d22;
+    --brown:    #8B4513;
+    --amber:    #E8960C;
+    --text:     #2C1810;
+    --text-muted: #7A5C4A;
+    --card:     #FFFFFF;
+    --green:    #2E7D32;
+    --shadow:   0 4px 24px rgba(44,24,16,0.10);
+    --shadow-lg:0 8px 40px rgba(44,24,16,0.16);
+    --radius:   16px;
+    --radius-sm:10px;
+    --transition: 0.28s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ─── RESET ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ─── TEXTURE OVERLAY ────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(192,57,43,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 110%, rgba(139,69,19,0.06) 0%, transparent 55%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── LAYOUT ──────────────────────────────────────────────── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative; z-index: 1;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────────── */
+  header {
+    padding: 40px 0 24px;
+    text-align: center;
+  }
+  .logo-mark {
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 10px;
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(192,57,43,0.3));
+  }
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    font-weight: 900;
+    color: var(--red);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .brand-sub {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* ─── MODE TOGGLE ────────────────────────────────────────── */
+  .mode-toggle-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0 36px;
+  }
+  .mode-toggle {
+    display: flex;
+    background: var(--cream2);
+    border-radius: 50px;
+    padding: 4px;
+    gap: 2px;
+    box-shadow: inset 0 2px 6px rgba(44,24,16,0.12);
+  }
+  .mode-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 26px;
+    border-radius: 46px;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: var(--transition);
+  }
+  .mode-btn.active {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(192,57,43,0.35);
+  }
+
+  /* ─── DIVIDER ────────────────────────────────────────────── */
+  .divider {
+    width: 48px; height: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+
+  /* ─── CARDS ──────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    border: 1px solid rgba(139,69,19,0.08);
+  }
+
+  /* ─── SECTION TITLE ──────────────────────────────────────── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  /* ─── WIZARD PROGRESS ────────────────────────────────────── */
+  .wizard-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 36px;
+  }
+  .prog-step {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .prog-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem;
+    border: 2px solid var(--cream2);
+    background: var(--cream2);
+    color: var(--text-muted);
+    transition: var(--transition);
+  }
+  .prog-dot.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(192,57,43,0.4);
+  }
+  .prog-dot.done {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .prog-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .prog-label.active { color: var(--red); }
+  .prog-label.done   { color: var(--green); }
+  .prog-line {
+    height: 2px;
+    width: 60px;
+    background: var(--cream2);
+    margin-bottom: 20px;
+    transition: var(--transition);
+  }
+  .prog-line.done { background: var(--green); }
+
+  /* ─── STEPPER ────────────────────────────────────────────── */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--cream2);
+    border-radius: 50px;
+    width: fit-content;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(44,24,16,0.08);
+  }
+  .stepper-btn {
+    width: 52px; height: 52px;
+    border: none; background: transparent;
+    font-size: 1.4rem; font-weight: 300;
+    cursor: pointer; color: var(--brown);
+    transition: var(--transition);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stepper-btn:hover { background: rgba(192,57,43,0.1); }
+  .stepper-btn:active { background: rgba(192,57,43,0.2); }
+  .stepper-val {
+    min-width: 60px;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* ─── TIME CARDS ─────────────────────────────────────────── */
+  .time-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .time-card {
+    border-radius: var(--radius-sm);
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--cream2);
+    transition: var(--transition);
+    user-select: none;
+  }
+  .time-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+  .time-card.selected {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.07);
+    box-shadow: 0 4px 16px rgba(192,57,43,0.15);
+  }
+  .time-card .tc-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .time-card .tc-hours {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--red);
+    display: block;
+    line-height: 1;
+  }
+  .time-card .tc-best {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    background: rgba(46,125,50,0.12);
+    color: var(--green);
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .time-card .tc-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ─── FLOUR CARDS ────────────────────────────────────────── */
+  .flour-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .flour-card {
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--cream2);
+    transition: var(--transition);
+    user-select: none;
+    position: relative;
+  }
+  .flour-card:hover:not(.disabled) { border-color: var(--amber); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .flour-card.selected {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.06);
+    box-shadow: 0 4px 16px rgba(192,57,43,0.15);
+  }
+  .flour-card.disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+  }
+  .flour-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .flour-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .nivel-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nivel-badge.principiante { background: #E8F5E9; color: var(--green); }
+  .nivel-badge.intermedio   { background: #FFF3E0; color: #E65100; }
+  .nivel-badge.avanzado     { background: #FCE4EC; color: #C62828; }
+
+  .specs-chips {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+  }
+  .spec-chip {
+    padding: 3px 10px;
+    background: rgba(139,69,19,0.1);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--brown);
+    font-weight: 500;
+  }
+
+  /* ─── SEASON CARDS ───────────────────────────────────────── */
+  .season-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .season-card {
+    border-radius: var(--radius-sm);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--cream2);
+    transition: var(--transition);
+    user-select: none;
+  }
+  .season-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+  .season-card.selected {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.07);
+    box-shadow: 0 4px 16px rgba(192,57,43,0.15);
+  }
+  .season-card .sc-icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .season-card .sc-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ─── TEMP SELECTOR ──────────────────────────────────────── */
+  .temp-section { margin-top: 8px; }
+  .temp-label-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .temp-selected-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--red);
+  }
+  .temp-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .temp-btn {
+    width: 52px; height: 42px;
+    border-radius: 8px;
+    border: 2px solid var(--cream2);
+    background: var(--cream2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .temp-btn:hover { border-color: var(--amber); color: var(--text); }
+  .temp-btn.selected {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(192,57,43,0.35);
+  }
+
+  /* ─── NAVIGATION BUTTONS ─────────────────────────────────── */
+  .wizard-nav {
+    display: flex; gap: 12px; justify-content: flex-end;
+    margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--cream2);
+  }
+  .btn {
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(192,57,43,0.35);
+  }
+  .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(192,57,43,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: var(--cream2);
+    color: var(--text-muted);
+  }
+  .btn-secondary:hover { background: #EBE0C8; color: var(--text); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 2px solid var(--cream2);
+  }
+  .btn-ghost:hover { border-color: var(--brown); color: var(--brown); }
+
+  /* ─── RESULTS ────────────────────────────────────────────── */
+  .results-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .results-summary {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  }
+  .results-summary span {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--cream2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media(min-width: 560px) {
+    .ingredient-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .ing-card {
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 20px 14px;
+    text-align: center;
+    border: 1px solid rgba(139,69,19,0.1);
+    animation: fadeUp 0.4s ease both;
+  }
+  .ing-card:nth-child(1) { animation-delay: 0.05s; }
+  .ing-card:nth-child(2) { animation-delay: 0.10s; }
+  .ing-card:nth-child(3) { animation-delay: 0.15s; }
+  .ing-card:nth-child(4) { animation-delay: 0.20s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .ing-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .ing-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+    display: block;
+  }
+  .ing-unit { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+  .ing-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* Yeast toggle */
+  .yeast-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .switch {
+    position: relative; width: 44px; height: 24px;
+    cursor: pointer; display: inline-block;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider-sw {
+    position: absolute; inset: 0;
+    border-radius: 24px;
+    background: var(--cream2);
+    transition: var(--transition);
+    border: 2px solid rgba(139,69,19,0.15);
+  }
+  .slider-sw::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    left: 2px; top: 2px;
+    background: var(--brown);
+    transition: var(--transition);
+  }
+  .switch input:checked + .slider-sw { background: var(--red); border-color: var(--red); }
+  .switch input:checked + .slider-sw::before { transform: translateX(20px); background: #fff; }
+
+  /* ─── FERMENTATION GUIDE ─────────────────────────────────── */
+  .ferm-guide {
+    background: linear-gradient(135deg, rgba(44,24,16,0.03) 0%, rgba(192,57,43,0.04) 100%);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    border: 1px solid rgba(192,57,43,0.1);
+    margin-top: 16px;
+  }
+  .ferm-guide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ferm-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .ferm-step {
+    text-align: center;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 10px;
+    border: 1px solid rgba(139,69,19,0.1);
+  }
+  .ferm-step-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .ferm-step-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--red);
+    display: block;
+  }
+  .ferm-step-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-top: 3px;
+    display: block;
+  }
+
+  /* ─── INFO NOTE ──────────────────────────────────────────── */
+  .info-note {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #FFF8E1;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--amber);
+    margin-top: 16px;
+    font-size: 0.83rem;
+    color: #5D4037;
+    line-height: 1.5;
+  }
+  .info-note .note-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── ADVANCED MODE ──────────────────────────────────────── */
+  .adv-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media(min-width: 700px) {
+    .adv-layout {
+      grid-template-columns: 340px 1fr;
+      align-items: start;
+    }
+  }
+
+  .adv-controls { display: flex; flex-direction: column; gap: 20px; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 8px; }
+  .ctrl-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .ctrl-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ctrl-btn {
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 2px solid var(--cream2);
+    background: var(--cream2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 44px;
+  }
+  .ctrl-btn:hover { border-color: var(--amber); color: var(--text); }
+  .ctrl-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(192,57,43,0.3);
+  }
+
+  .adv-select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--cream2);
+    background: var(--cream2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B4513' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    transition: var(--transition);
+    min-height: 48px;
+  }
+  .adv-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
+
+  .hydration-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, rgba(192,57,43,0.08), rgba(232,150,12,0.08));
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--brown);
+    border: 1px solid rgba(192,57,43,0.15);
+  }
+  .hydration-chip strong { color: var(--red); font-size: 1rem; }
+
+  /* ─── TEMP RANGE (advanced) ──────────────────────────────── */
+  .temp-slider-wrap {
+    display: flex; align-items: center; gap: 12px;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    flex: 1; height: 6px;
+    border-radius: 3px;
+    background: var(--cream2);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--red);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(192,57,43,0.4);
+    border: 3px solid #fff;
+  }
+  .temp-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--red);
+    min-width: 52px;
+    text-align: right;
+  }
+
+  /* ─── FLOUR SPECS (advanced result) ─────────────────────── */
+  .flour-specs-card {
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    border: 1px solid rgba(139,69,19,0.1);
+    margin-top: 14px;
+  }
+  .flour-specs-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  /* ─── FERMENTATION REFERENCE TABLE ──────────────────────── */
+  .ferm-table-wrap {
+    overflow-x: auto;
+    margin-top: 8px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+  }
+  .ferm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    background: var(--card);
+    min-width: 480px;
+  }
+  .ferm-table th {
+    padding: 12px 14px;
+    background: var(--text);
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ferm-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+  .ferm-table th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+  .ferm-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--cream2);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .ferm-table tr:last-child td { border-bottom: none; }
+  .ferm-table tr:nth-child(even) td { background: rgba(253,248,240,0.5); }
+  .ferm-table tr.highlighted td {
+    background: rgba(192,57,43,0.06);
+    font-weight: 600;
+  }
+  .ferm-table .temp-cell {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--red);
+  }
+
+  /* ─── SECTION VIEWS ──────────────────────────────────────── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ─── WIZARD STEPS ───────────────────────────────────────── */
+  .step { display: none; }
+  .step.active { display: block; animation: stepIn 0.3s ease; }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ─── QUESTION ROW ───────────────────────────────────────── */
+  .q-row {
+    margin-bottom: 28px;
+  }
+  .q-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  /* ─── UTIL ───────────────────────────────────────────────── */
+  .hidden { display: none !important; }
+  .mt-8  { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .text-center { text-align: center; }
+
+  /* ─── KNEADING METHOD CARDS ─────────────────────────────── */
+  .knead-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 0;
+  }
+  .knead-card {
+    border-radius: var(--radius-sm);
+    padding: 20px 14px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--cream2);
+    transition: var(--transition);
+    user-select: none;
+  }
+  .knead-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+  .knead-card.selected {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.07);
+    box-shadow: 0 4px 16px rgba(192,57,43,0.15);
+  }
+  .knead-card .kc-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .knead-card .kc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+  .knead-card .kc-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    display: block;
+    line-height: 1.3;
+  }
+
+  /* ─── HYDRATION OPTIONS ──────────────────────────────────── */
+  .hyd-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hyd-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--cream2);
+    background: var(--cream2);
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 72px;
+  }
+  .hyd-btn:hover { border-color: var(--amber); }
+  .hyd-btn.selected {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(192,57,43,0.35);
+  }
+  .hyd-btn .hyd-pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--red);
+  }
+  .hyd-btn.selected .hyd-pct { color: #fff; }
+  .hyd-btn .hyd-name {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .hyd-btn.selected .hyd-name { color: rgba(255,255,255,0.85); }
+  .hyd-btn.best-hyd::after {
+    content: '★';
+    font-size: 0.6rem;
+    color: var(--green);
+    display: block;
+  }
+  .hyd-btn.selected.best-hyd::after { color: rgba(255,255,255,0.8); }
+  .hyd-fixed {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 18px;
+    background: rgba(46,125,50,0.08);
+    border: 1px solid rgba(46,125,50,0.2);
+    border-radius: var(--radius-sm);
+    color: #1B5E20;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .hyd-fixed strong { font-size: 1.1rem; font-family: 'Playfair Display', serif; }
+
+  /* ─── HYDRATION CUSTOM SLIDER ───────────────────────────── */
+  .hyd-custom-wrap {
+    margin-top: 14px;
+    background: var(--cream2);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    border: 1px solid rgba(139,69,19,0.1);
+  }
+  .hyd-custom-label-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .hyd-custom-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+  }
+  .hyd-slider-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .hyd-slider-limit {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 28px;
+    text-align: center;
+  }
+  .hyd-slider-row input[type=range] { flex: 1; }
+  .hyd-zone-bar {
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 18px;
+    gap: 1px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .hyd-zone {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(139,69,19,0.12);
+    color: var(--brown);
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 3px;
+  }
+  .hyd-zone-mid { background: rgba(192,57,43,0.15); color: var(--red); }
+  .hyd-zone-con { background: rgba(232,150,12,0.2); color: #8B5000; }
+  .hyd-zone-hi  { background: rgba(46,125,50,0.12); color: var(--green); }
+
+  /* ─── FERMENTATION FLOW ─────────────────────────────────── */
+  .ferm-steps-flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .ferm-arrow {
+    font-size: 1.2rem;
+    color: var(--amber);
+    font-weight: 700;
+    margin-top: 28px;
+    flex-shrink: 0;
+  }
+  .ferm-step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 4px;
+  }
+  .ferm-rec {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-top: 14px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .ferm-rec-best {
+    background: linear-gradient(135deg, rgba(46,125,50,0.08), rgba(46,125,50,0.04));
+    border: 1px solid rgba(46,125,50,0.2);
+    color: #1B5E20;
+  }
+  .ferm-rec-good {
+    background: linear-gradient(135deg, rgba(232,150,12,0.08), rgba(232,150,12,0.04));
+    border: 1px solid rgba(232,150,12,0.2);
+    color: #5D4037;
+  }
+  .ferm-rec-ok {
+    background: var(--cream2);
+    border: 1px solid rgba(139,69,19,0.12);
+    color: var(--text-muted);
+  }
+  .ferm-rec-icon { font-size: 1rem; flex-shrink: 0; }
+  @media(max-width: 560px) {
+    .ferm-steps-flow { flex-direction: column; align-items: stretch; gap: 8px; }
+    .ferm-arrow { display: none; }
+  }
+
+  /* ─── PUNTATA HINT ──────────────────────────────────────── */
+  .ferm-step-hint {
+    display: block;
+    font-size: 0.66rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 4px;
+    font-style: italic;
+    max-width: 120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── TOOLTIP ────────────────────────────────────────────── */
+  .th-tooltip { position: relative; }
+  .tooltip-icon {
+    cursor: help;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+  }
+  .tooltip-box {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 220px;
+    line-height: 1.4;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 10;
+    white-space: normal;
+  }
+  .tooltip-box::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--text);
+  }
+  .tooltip-icon:hover .tooltip-box { display: block; }
+
+  /* ─── PRINT ──────────────────────────────────────────────── */
+  @media print {
+    body::before, .mode-toggle-wrap, .wizard-nav, .btn { display: none; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+
+  /* ─── MOBILE ─────────────────────────────────────────────── */
+  @media(max-width: 480px) {
+    .time-cards { grid-template-columns: 1fr; }
+    .ingredient-grid { grid-template-columns: repeat(2, 1fr); }
+    .prog-line { width: 36px; }
+    .prog-btn  { padding: 10px 18px; }
+    .card { padding: 22px 18px; }
+    .ferm-steps { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media(max-width: 360px) {
+    .time-cards { grid-template-columns: 1fr; }
+    .mode-btn { padding: 10px 18px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <span class="logo-mark">🍕</span>
+    <h1 class="brand-name">Papapizzero</h1>
+    <p class="brand-sub">Calculadora de Masa Napolitana</p>
+  </header>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-toggle-wrap">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-principiante" onclick="setMode('principiante')">Principiante</button>
+      <button class="mode-btn" id="btn-avanzado" onclick="setMode('avanzado')">Avanzado</button>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║   MODO PRINCIPIANTE          ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div id="view-principiante" class="view active">
+
+    <!-- Progress bar -->
+    <div class="wizard-progress" id="wizard-progress">
+      <div class="prog-step">
+        <div class="prog-dot active" id="dot-1">1</div>
+        <div class="prog-label active" id="lbl-1">Las pizzas</div>
+      </div>
+      <div class="prog-line" id="line-1"></div>
+      <div class="prog-step">
+        <div class="prog-dot" id="dot-2">2</div>
+        <div class="prog-label" id="lbl-2">La harina</div>
+      </div>
+      <div class="prog-line" id="line-2"></div>
+      <div class="prog-step">
+        <div class="prog-dot" id="dot-3">3</div>
+        <div class="prog-label" id="lbl-3">El momento</div>
+      </div>
+    </div>
+
+    <div class="card">
+
+      <!-- STEP 1 -->
+      <div class="step active" id="step-1">
+        <div class="section-title">Las pizzas</div>
+        <div class="section-sub">Cuántas, cómo amasas y cuándo las comerás</div>
+
+        <div class="q-row">
+          <span class="q-label">¿Cuántas pizzas vas a hacer?</span>
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div class="stepper">
+              <button class="stepper-btn" onclick="changePizzas(-1)">−</button>
+              <span class="stepper-val" id="pizza-count-display">3</span>
+              <button class="stepper-btn" onclick="changePizzas(1)">+</button>
+            </div>
+            <span style="font-size:0.85rem;color:var(--text-muted);">pizzas</span>
+          </div>
+        </div>
+
+        <div class="q-row">
+          <span class="q-label">¿Cómo vas a amasar?</span>
+          <div class="info-note" style="margin-bottom:14px;">
+            <span class="note-icon">ℹ️</span>
+            <span>Siempre usamos <strong>masa directa</strong> — sin prefermentos. El método de amasado determina qué hidrataciones son manejables.</span>
+          </div>
+          <div class="knead-cards">
+            <div class="knead-card" id="kc-mano" onclick="selectMetodo('mano')">
+              <div class="kc-icon">🤲</div>
+              <span class="kc-title">A mano</span>
+              <span class="kc-sub">Máximo 57% de agua recomendado</span>
+            </div>
+            <div class="knead-card" id="kc-maquina" onclick="selectMetodo('maquina')">
+              <div class="kc-icon">⚙️</div>
+              <span class="kc-title">Con amasadora</span>
+              <span class="kc-sub">Permite hasta 67% de agua</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="q-row hidden" id="hyd-row-wizard">
+          <span class="q-label">¿Qué hidratación quieres usar?</span>
+          <div id="hyd-options-wizard" class="hyd-options"></div>
+        </div>
+
+        <div class="q-row">
+          <span class="q-label">¿Cuándo las vas a comer?</span>
+          <div class="time-cards">
+            <div class="time-card" id="tc-8" onclick="selectTime(8)">
+              <div class="tc-icon">⚡</div>
+              <span class="tc-hours">8h</span>
+              <span class="tc-label">Hoy mismo</span>
+            </div>
+            <div class="time-card" id="tc-24" onclick="selectTime(24)">
+              <div class="tc-icon">🌙</div>
+              <span class="tc-hours">24h</span>
+              <span class="tc-label">Mañana</span>
+            </div>
+            <div class="time-card" id="tc-48" onclick="selectTime(48)">
+              <div class="tc-icon">⭐</div>
+              <span class="tc-hours">48h</span>
+              <span class="tc-label">Pasado mañana</span>
+              <span class="tc-best">Mejor resultado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <button class="btn btn-primary" onclick="goStep(2)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step" id="step-2">
+        <div class="section-title">La harina</div>
+        <div class="section-sub">Elige la harina que tienes o que vas a comprar</div>
+
+        <div class="flour-grid" id="flour-grid-wizard">
+          <!-- Generated by JS -->
+        </div>
+
+        <div class="wizard-nav">
+          <button class="btn btn-secondary" onclick="goStep(1)">← Anterior</button>
+          <button class="btn btn-primary" onclick="goStep(3)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step" id="step-3">
+        <div class="section-title">El momento</div>
+        <div class="section-sub">La estación y la temperatura afectan a la levadura</div>
+
+        <div class="q-row">
+          <span class="q-label">¿En qué estación estamos?</span>
+          <div class="season-cards">
+            <div class="season-card" id="sc-invierno" onclick="selectSeason('invierno')">
+              <div class="sc-icon">❄️</div>
+              <div class="sc-label">Invierno</div>
+            </div>
+            <div class="season-card" id="sc-verano" onclick="selectSeason('verano')">
+              <div class="sc-icon">☀️</div>
+              <div class="sc-label">Verano</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="q-row" id="temp-row-wizard">
+          <span class="q-label">¿Qué temperatura hay en casa?</span>
+          <div class="temp-section">
+            <div class="temp-label-row">
+              <span style="font-size:0.82rem;color:var(--text-muted);">Selecciona la temperatura ambiente</span>
+              <span class="temp-selected-display" id="temp-display-wizard">—</span>
+            </div>
+            <div class="temp-buttons" id="temp-buttons-wizard">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <button class="btn btn-secondary" onclick="goStep(2)">← Anterior</button>
+          <button class="btn btn-primary" onclick="calculateAndShow()">Calcular 🍕</button>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="step" id="step-result">
+        <div class="results-header">
+          <div class="divider"></div>
+          <div class="section-title" style="font-size:1.6rem;">Tu receta</div>
+          <div class="results-summary" id="results-summary-wiz"></div>
+        </div>
+
+        <div class="yeast-toggle">
+          <span id="yeast-lbl-fresh" style="font-weight:600;color:var(--brown);">Levadura fresca</span>
+          <label class="switch">
+            <input type="checkbox" id="yeast-toggle-wiz" onchange="toggleYeast('wiz')">
+            <span class="slider-sw"></span>
+          </label>
+          <span id="yeast-lbl-dry">Levadura seca</span>
+        </div>
+
+        <div class="ingredient-grid" id="ingredients-wiz"></div>
+
+        <div id="ferm-guide-wiz"></div>
+
+        <div class="info-note">
+          <span class="note-icon">💡</span>
+          <span>Con altas hidrataciones (75%) no es recomendable largas fermentaciones. Asegúrate de tener una harina de gran fuerza.</span>
+        </div>
+
+        <div class="wizard-nav" style="justify-content:center;margin-top:24px;">
+          <button class="btn btn-ghost" onclick="resetWizard()">← Calcular de nuevo</button>
+          <button class="btn btn-secondary" onclick="window.print()">🖨 Imprimir</button>
+        </div>
+      </div>
+
+    </div><!-- /card -->
+  </div><!-- /view-principiante -->
+
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║   MODO AVANZADO              ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div id="view-avanzado" class="view">
+    <div class="adv-layout">
+
+      <!-- Controls -->
+      <div class="card adv-controls">
+        <div class="section-title">Configuración</div>
+        <div class="section-sub">Ajusta todos los parámetros</div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Número de pizzas</span>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="stepper">
+              <button class="stepper-btn" onclick="changeAdv('pizzas', -1)">−</button>
+              <span class="stepper-val" id="adv-pizza-display">3</span>
+              <button class="stepper-btn" onclick="changeAdv('pizzas', 1)">+</button>
+            </div>
+            <span style="font-size:0.82rem;color:var(--text-muted);">pizzas</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Peso de bola</span>
+          <div class="ctrl-row">
+            <button class="ctrl-btn active" id="adv-ball-240" onclick="setAdvBall(240)">240 g</button>
+            <button class="ctrl-btn" id="adv-ball-270" onclick="setAdvBall(270)">270 g</button>
+            <button class="ctrl-btn" id="adv-ball-300" onclick="setAdvBall(300)">300 g</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Tiempo de fermentación</span>
+          <div class="ctrl-row">
+            <button class="ctrl-btn active" id="adv-time-8"  onclick="setAdvTime(8)">8 h</button>
+            <button class="ctrl-btn"        id="adv-time-24" onclick="setAdvTime(24)">24 h</button>
+            <button class="ctrl-btn"        id="adv-time-48" onclick="setAdvTime(48)">48 h</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Harina</span>
+          <select class="adv-select" id="adv-flour-select" onchange="advRecalc()">
+            <!-- Generated by JS -->
+          </select>
+          <div class="flour-specs-card" id="adv-flour-specs">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Estación</span>
+          <div class="ctrl-row">
+            <button class="ctrl-btn active" id="adv-sea-invierno" onclick="setAdvSeason('invierno')">❄️ Invierno</button>
+            <button class="ctrl-btn"        id="adv-sea-verano"   onclick="setAdvSeason('verano')">☀️ Verano</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group" id="adv-temp-group">
+          <span class="ctrl-label">Temperatura en casa</span>
+          <div class="temp-slider-wrap">
+            <input type="range" id="adv-temp-slider" min="16" max="30" step="1" value="22" oninput="advTempChange()">
+            <span class="temp-display" id="adv-temp-display">22 °C</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Método de amasado</span>
+          <div class="ctrl-row">
+            <button class="ctrl-btn active" id="adv-knead-mano"    onclick="setAdvMetodo('mano')">🤲 A mano</button>
+            <button class="ctrl-btn"        id="adv-knead-maquina" onclick="setAdvMetodo('maquina')">⚙️ Amasadora</button>
+          </div>
+          <div class="info-note" style="margin-top:8px;padding:10px 12px;font-size:0.78rem;">
+            <span class="note-icon">ℹ️</span>
+            <span>Masa directa siempre — sin prefermentos.</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Hidratación</span>
+          <div class="hyd-options" id="adv-hyd-options"></div>
+          <div class="hyd-custom-wrap">
+            <div class="hyd-custom-label-row">
+              <span style="font-size:0.78rem;color:var(--text-muted);">Ajuste libre</span>
+              <span class="hyd-custom-display" id="adv-hyd-custom-display">57%</span>
+            </div>
+            <div class="hyd-slider-row">
+              <span class="hyd-slider-limit">40%</span>
+              <input type="range" id="adv-hyd-slider" min="40" max="80" step="1" value="57" oninput="advHydSliderChange()">
+              <span class="hyd-slider-limit">80%</span>
+            </div>
+            <div class="hyd-zone-bar">
+              <span class="hyd-zone" style="width:21.25%">Firme</span>
+              <span class="hyd-zone hyd-zone-mid" style="width:17.5%">Napolitana</span>
+              <span class="hyd-zone hyd-zone-con" style="width:17.5%">Contemporánea</span>
+              <span class="hyd-zone hyd-zone-hi" style="width:43.75%">Alta hidratación</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results panel -->
+      <div>
+        <div class="card" id="adv-results">
+          <div class="results-header">
+            <div class="section-title">Ingredientes</div>
+            <div class="results-summary" id="results-summary-adv"></div>
+          </div>
+
+          <div class="yeast-toggle" style="margin-top:16px;">
+            <span id="adv-yeast-lbl-fresh" style="font-weight:600;color:var(--brown);">Levadura fresca</span>
+            <label class="switch">
+              <input type="checkbox" id="yeast-toggle-adv" onchange="toggleYeast('adv')">
+              <span class="slider-sw"></span>
+            </label>
+            <span id="adv-yeast-lbl-dry">Levadura seca</span>
+          </div>
+
+          <div class="ingredient-grid" id="ingredients-adv"></div>
+
+          <div id="ferm-guide-adv"></div>
+
+          <div class="info-note mt-16">
+            <span class="note-icon">💡</span>
+            <span>Con altas hidrataciones (75%) no es recomendable largas fermentaciones. Asegúrate de tener una harina de gran fuerza.</span>
+          </div>
+        </div>
+
+        <!-- Fermentation reference table -->
+        <div class="card mt-24" id="adv-ferm-table-wrap">
+          <div class="section-title" style="font-size:1.1rem;margin-bottom:4px;">Tabla de fermentación</div>
+          <div class="section-sub">Referencia de tiempos según temperatura ambiente</div>
+          <div class="ferm-table-wrap">
+            <table class="ferm-table" id="ferm-table-el">
+              <thead>
+                <tr>
+                  <th>Temp.</th>
+                  <th class="th-tooltip">Puntata <span class="tooltip-icon">ⓘ<span class="tooltip-box">Primera fermentación en bloque a temperatura ambiente, antes de dividir la masa en bolas.</span></span></th>
+                  <th>Frigorífico 24h</th>
+                  <th>Frigorífico 48h</th>
+                  <th>Sacar (24h)</th>
+                  <th>Sacar (48h)</th>
+                </tr>
+              </thead>
+              <tbody id="ferm-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /view-avanzado -->
+
+  <div style="height:60px;"></div>
+</div><!-- /container -->
+
+<script>
+/* ════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════ */
+const FLOURS = {
+  "Harina Caputo 00": {
+    specs: ["Potencia W 300/320", "Proteína 12-13%", "P/L 0.50/0.60", "Estabilidad 10-12 min"],
+    nivel: "intermedio",
+    descripcion: "La clásica harina napolitana. Ideal para fermentaciones largas.",
+    recipes: {
+      8:  { invierno: { lf:1.17,  ld:0.39,  sal:10.125  }, verano: { lf:0.945, ld:0.315, sal:15.1875 } },
+      24: { invierno: { lf:1.08,  ld:0.36,  sal:10.125  }, verano: { lf:0.99,  ld:0.33,  sal:15.1875 } },
+      48: { invierno: { lf:1.035, ld:0.345, sal:10.125  }, verano: { lf:0.9,   ld:0.3,   sal:15.1875 } }
+    }
+  },
+  "Harina Caputo Blue Pizzeria": {
+    specs: ["W 260/270", "Proteína 12.5%", "Vida útil 12 meses", "P/L 0.50/0.60"],
+    nivel: "principiante",
+    descripcion: "Muy equilibrada, perfecta para empezar. Gran resultado en horno doméstico.",
+    recipes: {
+      8:  { invierno: { lf:1.17, ld:0.39, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      24: { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  },
+  "Harina Caputo Nuvola": {
+    specs: ["W 270/290", "Proteína 12.5%", "Vida útil 12 meses", "Hornear W 270/290"],
+    nivel: "intermedio",
+    descripcion: "Para masas muy hidratadas y con mucho alveolado. Cornicione espectacular.",
+    recipes: {
+      8:  { invierno: { lf:1.17, ld:0.39, sal:10.125 }, verano: { lf:0.9,  ld:0.3,  sal:15.1875 } },
+      24: { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.99, ld:0.33, sal:15.1875 } },
+      48: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9,  ld:0.3,  sal:15.1875 } }
+    }
+  },
+  "Harina Caputo Manitoba": {
+    specs: ["W 370/390", "Proteína 14.5%", "Vida útil 12 meses", "P/L 0.50/0.60"],
+    nivel: "avanzado",
+    descripcion: "La harina más fuerte. Solo para fermentaciones 24-48h. No apta para 8h.",
+    recipes: {
+      24: { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      48: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  },
+  "Casa de la Harina Pizza": {
+    specs: ["W 230-260", "P/L 0.4/0.5", "Gluten >29%", "Proteína >12.5%"],
+    nivel: "principiante",
+    descripcion: "Harina especializada accesible. Buen resultado sin complicaciones.",
+    recipes: {
+      8:  { invierno: { lf:1.17, ld:0.39, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      24: { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      48: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  },
+  "Harina de Fuerza Gallo": {
+    specs: ["W 300", "Proteína 11.7g/100g", "Supermercado"],
+    nivel: "principiante",
+    descripcion: "Fácil de encontrar en cualquier supermercado. Resultado muy digno.",
+    recipes: {
+      8:  { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      24: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  },
+  "Harina de Fuerza Mercadona": {
+    specs: ["W 300", "Proteína 12.9g/100g", "Supermercado"],
+    nivel: "principiante",
+    descripcion: "La opción más accesible. Sorprendentemente buena para pizza en casa.",
+    recipes: {
+      8:  { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      24: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  },
+  "Harina Harimsa": {
+    specs: ["W 300", "Proteína 12.9g/100g"],
+    nivel: "intermedio",
+    descripcion: "Buena harina de fuerza española. Versátil y con buen comportamiento.",
+    recipes: {
+      8:  { invierno: { lf:1.17, ld:0.39, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      24: { invierno: { lf:1.08, ld:0.36, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } },
+      48: { invierno: { lf:0.99, ld:0.33, sal:10.125 }, verano: { lf:0.9, ld:0.3, sal:15.1875 } }
+    }
+  }
+};
+
+const FERMENTATION = [
+  { temp:30, puntata:"1,5 h",  appretto24:"20-24 h", appretto48:"40-48 h", amb24:"2 h",   amb48:"2 h"   },
+  { temp:28, puntata:"2 h",    appretto24:"20-24 h", appretto48:"40-48 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:26, puntata:"2,5 h",  appretto24:"20-24 h", appretto48:"40-48 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:25, puntata:"3 h",    appretto24:"20 h",    appretto48:"40 h",    amb24:"3 h",   amb48:"3 h"   },
+  { temp:24, puntata:"3,5 h",  appretto24:"18-24 h", appretto48:"36-40 h", amb24:"4 h",   amb48:"4 h"   },
+  { temp:23, puntata:"3 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"5 h",   amb48:"5 h"   },
+  { temp:22, puntata:"4,5 h",  appretto24:"18-24 h", appretto48:"36-40 h", amb24:"4,5 h", amb48:"4,5 h" },
+  { temp:21, puntata:"5 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"4 h",   amb48:"4 h"   },
+  { temp:20, puntata:"6 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:19, puntata:"7 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:18, puntata:"8 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:17, puntata:"9 h",    appretto24:"18-24 h", appretto48:"36-40 h", amb24:"3 h",   amb48:"3 h"   },
+  { temp:16, puntata:"10,5 h", appretto24:"18-24 h", appretto48:"36-40 h", amb24:"3 h",   amb48:"3 h"   }
+];
+
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+const HYD_OPTIONS = {
+  mano:    [{ v:57, label:'Napolitana auténtica', best:true }],
+  maquina: [
+    { v:57, label:'Napolitana auténtica', best:false },
+    { v:60, label:'Clásica',             best:false },
+    { v:63, label:'Equilibrada',         best:false },
+    { v:67, label:'Contemporánea',       best:false }
+  ]
+};
+
+const state = {
+  mode:    'principiante',
+  // wizard
+  step:    1,
+  pizzas:  3,
+  metodo:  null,
+  hidratacion: null,
+  tiempo:  null,
+  flour:   null,
+  season:  null,
+  temp:    null,
+  yeastDry_wiz: false,
+  // advanced
+  adv: {
+    pizzas:     3,
+    ball:       240,
+    tiempo:     8,
+    flour:      Object.keys(FLOURS)[0],
+    season:     'invierno',
+    temp:       22,
+    yeastDry:   false,
+    metodo:     'mano',
+    hidratacion: 57
+  }
+};
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+(function init() {
+  const saved = localStorage.getItem('ppz-mode');
+  if (saved) setMode(saved);
+
+  buildTempButtons();
+  buildFlourGrid();
+  buildAdvFlourSelect();
+  buildFermTable();
+  buildAdvHydOptions();
+  advRecalc();
+})();
+
+/* ════════════════════════════════════════════════
+   MODE
+════════════════════════════════════════════════ */
+function setMode(mode) {
+  state.mode = mode;
+  localStorage.setItem('ppz-mode', mode);
+  document.getElementById('view-principiante').classList.toggle('active', mode === 'principiante');
+  document.getElementById('view-avanzado').classList.toggle('active', mode === 'avanzado');
+  document.getElementById('btn-principiante').classList.toggle('active', mode === 'principiante');
+  document.getElementById('btn-avanzado').classList.toggle('active', mode === 'avanzado');
+}
+
+/* ════════════════════════════════════════════════
+   WIZARD
+════════════════════════════════════════════════ */
+function goStep(n) {
+  // Validate before advancing
+  if (n === 2 && (!state.tiempo || !state.metodo || !state.hidratacion)) { shakeEl('step-1'); return; }
+  if (n === 3 && !state.flour)  { shakeEl('step-2'); return; }
+
+  // Hide all steps
+  document.querySelectorAll('#view-principiante .step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + (n === 4 ? 'result' : n)).classList.add('active');
+  state.step = n;
+  updateProgress(n);
+
+  if (n === 2) buildFlourGrid();
+  if (n === 3) updateTempRowVisibility();
+}
+
+function updateProgress(n) {
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById('dot-' + i);
+    const lbl = document.getElementById('lbl-' + i);
+    dot.className = 'prog-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+    lbl.className = 'prog-label' + (i < n ? ' done' : i === n ? ' active' : '');
+  });
+  [1,2].forEach(i => {
+    const line = document.getElementById('line-' + i);
+    line.className = 'prog-line' + (i < n ? ' done' : '');
+  });
+}
+
+function changePizzas(delta) {
+  state.pizzas = Math.max(1, Math.min(8, state.pizzas + delta));
+  document.getElementById('pizza-count-display').textContent = state.pizzas;
+}
+
+function selectTime(h) {
+  state.tiempo = h;
+  [8,24,48].forEach(t => document.getElementById('tc-' + t).classList.toggle('selected', t === h));
+}
+
+function selectMetodo(m) {
+  state.metodo = m;
+  ['mano','maquina'].forEach(v => document.getElementById('kc-' + v).classList.toggle('selected', v === m));
+  // Auto-set hydration: mano always 57, maquina default 57
+  state.hidratacion = 57;
+  buildWizHydOptions(m);
+  document.getElementById('hyd-row-wizard').classList.remove('hidden');
+}
+
+function buildWizHydOptions(metodo) {
+  const wrap = document.getElementById('hyd-options-wizard');
+  wrap.innerHTML = '';
+  const opts = HYD_OPTIONS[metodo];
+  if (metodo === 'mano') {
+    wrap.innerHTML = `<div class="hyd-fixed">🤲 <strong>57%</strong> — Napolitana auténtica. Máximo recomendado para amasado a mano.</div>`;
+    state.hidratacion = 57;
+    return;
+  }
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'hyd-btn' + (opt.v === state.hidratacion ? ' selected' : '') + (opt.best ? ' best-hyd' : '');
+    btn.innerHTML = `<span class="hyd-pct">${opt.v}%</span><span class="hyd-name">${opt.label}</span>`;
+    btn.onclick = () => {
+      state.hidratacion = opt.v;
+      wrap.querySelectorAll('.hyd-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function buildAdvHydOptions() {
+  const wrap = document.getElementById('adv-hyd-options');
+  wrap.innerHTML = '';
+  const opts = HYD_OPTIONS[state.adv.metodo];
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'hyd-btn' + (opt.v === state.adv.hidratacion ? ' selected' : '');
+    btn.innerHTML = `<span class="hyd-pct">${opt.v}%</span><span class="hyd-name">${opt.label}</span>`;
+    btn.onclick = () => {
+      state.adv.hidratacion = opt.v;
+      wrap.querySelectorAll('.hyd-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      syncHydSlider(opt.v);
+      advRecalc();
+    };
+    wrap.appendChild(btn);
+  });
+  syncHydSlider(state.adv.hidratacion);
+}
+
+function syncHydSlider(val) {
+  const slider = document.getElementById('adv-hyd-slider');
+  const display = document.getElementById('adv-hyd-custom-display');
+  if (slider)  slider.value = val;
+  if (display) display.textContent = val + '%';
+}
+
+function advHydSliderChange() {
+  const val = parseInt(document.getElementById('adv-hyd-slider').value);
+  state.adv.hidratacion = val;
+  document.getElementById('adv-hyd-custom-display').textContent = val + '%';
+  // Deselect preset buttons — value may not match any preset
+  const wrap = document.getElementById('adv-hyd-options');
+  wrap.querySelectorAll('.hyd-btn').forEach(b => {
+    const pct = parseInt(b.querySelector('.hyd-pct').textContent);
+    b.classList.toggle('selected', pct === val);
+  });
+  advRecalc();
+}
+
+function setAdvMetodo(m) {
+  state.adv.metodo = m;
+  ['mano','maquina'].forEach(v => document.getElementById('adv-knead-' + v).classList.toggle('active', v === m));
+  // Reset hydration to 57 when switching methods
+  state.adv.hidratacion = 57;
+  buildAdvHydOptions();
+  advRecalc();
+}
+
+function buildFlourGrid() {
+  const grid = document.getElementById('flour-grid-wizard');
+  grid.innerHTML = '';
+  Object.entries(FLOURS).forEach(([name, data]) => {
+    const available = state.tiempo ? !!data.recipes[state.tiempo] : true;
+    const selected  = state.flour === name;
+    const div = document.createElement('div');
+    div.className = 'flour-card' + (selected ? ' selected' : '') + (!available ? ' disabled' : '');
+    div.innerHTML = `
+      <div class="flour-name">${name}</div>
+      <div class="flour-desc">${data.descripcion}</div>
+      <span class="nivel-badge ${data.nivel}">${nivelLabel(data.nivel)}</span>
+      ${selected ? `<div class="specs-chips">${data.specs.map(s=>`<span class="spec-chip">${s}</span>`).join('')}</div>` : ''}
+    `;
+    if (available) div.onclick = () => selectFlour(name);
+    grid.appendChild(div);
+  });
+}
+
+function selectFlour(name) {
+  state.flour = name;
+  buildFlourGrid();
+}
+
+function selectSeason(s) {
+  state.season = s;
+  document.getElementById('sc-invierno').classList.toggle('selected', s === 'invierno');
+  document.getElementById('sc-verano').classList.toggle('selected', s === 'verano');
+}
+
+function buildTempButtons() {
+  const wrap = document.getElementById('temp-buttons-wizard');
+  wrap.innerHTML = '';
+  for (let t = 16; t <= 30; t += 1) {
+    const btn = document.createElement('button');
+    btn.className = 'temp-btn' + (state.temp === t ? ' selected' : '');
+    btn.textContent = t + '°';
+    btn.onclick = () => {
+      state.temp = t;
+      document.querySelectorAll('#temp-buttons-wizard .temp-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('temp-display-wizard').textContent = t + ' °C';
+    };
+    wrap.appendChild(btn);
+  }
+}
+
+function updateTempRowVisibility() {
+  const row = document.getElementById('temp-row-wizard');
+  row.classList.toggle('hidden', state.tiempo === 8);
+}
+
+function calculateAndShow() {
+  if (!state.season) { shakeEl('step-3'); return; }
+  if (state.tiempo !== 8 && !state.temp) { shakeEl('step-3'); return; }
+
+  const result = calcIngredients({
+    pizzas: state.pizzas,
+    ball: 240,
+    tiempo: state.tiempo,
+    flour: state.flour,
+    season: state.season,
+    yeastDry: state.yeastDry_wiz,
+    hidratacion: state.hidratacion
+  });
+
+  const seaLabel    = state.season === 'invierno' ? '❄️ Invierno' : '☀️ Verano';
+  const timeLabel   = state.tiempo === 8 ? 'Hoy en 8h' : state.tiempo === 24 ? 'Mañana (24h)' : 'Pasado (48h)';
+  const metodLabel  = state.metodo === 'mano' ? '🤲 Mano' : '⚙️ Amasadora';
+  document.getElementById('results-summary-wiz').innerHTML =
+    `<span>🍕 ${state.pizzas} pizzas</span><span>🌾 ${state.flour}</span><span>💧 ${state.hidratacion}%</span><span>${metodLabel}</span><span>${seaLabel}</span><span>⏱ ${timeLabel}</span>`;
+
+  renderIngredients('ingredients-wiz', result, false);
+  renderFermGuide('ferm-guide-wiz', state.tiempo, state.temp);
+
+  goStep(4);
+  setTimeout(() => document.getElementById('step-result').scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+function toggleYeast(mode) {
+  if (mode === 'wiz') {
+    state.yeastDry_wiz = document.getElementById('yeast-toggle-wiz').checked;
+    const result = calcIngredients({ pizzas: state.pizzas, ball: 240, tiempo: state.tiempo, flour: state.flour, season: state.season, yeastDry: state.yeastDry_wiz, hidratacion: state.hidratacion });
+    renderIngredients('ingredients-wiz', result, state.yeastDry_wiz);
+    document.getElementById('yeast-lbl-fresh').style.fontWeight = state.yeastDry_wiz ? '400' : '600';
+    document.getElementById('yeast-lbl-dry').style.fontWeight   = state.yeastDry_wiz ? '600' : '400';
+  } else {
+    state.adv.yeastDry = document.getElementById('yeast-toggle-adv').checked;
+    document.getElementById('adv-yeast-lbl-fresh').style.fontWeight = state.adv.yeastDry ? '400' : '600';
+    document.getElementById('adv-yeast-lbl-dry').style.fontWeight   = state.adv.yeastDry ? '600' : '400';
+    advRecalc();
+  }
+}
+
+function resetWizard() {
+  state.step = 1; state.tiempo = null; state.flour = null; state.season = null; state.temp = null;
+  state.metodo = null; state.hidratacion = null;
+  state.yeastDry_wiz = false;
+  document.getElementById('yeast-toggle-wiz').checked = false;
+  [8,24,48].forEach(t => document.getElementById('tc-'+t).classList.remove('selected'));
+  ['invierno','verano'].forEach(s => document.getElementById('sc-'+s).classList.remove('selected'));
+  ['mano','maquina'].forEach(v => document.getElementById('kc-'+v).classList.remove('selected'));
+  document.getElementById('temp-display-wizard').textContent = '—';
+  document.querySelectorAll('#temp-buttons-wizard .temp-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('pizza-count-display').textContent = 3;
+  document.getElementById('hyd-row-wizard').classList.add('hidden');
+  document.getElementById('hyd-options-wizard').innerHTML = '';
+  state.pizzas = 3;
+  goStep(1);
+}
+
+/* ════════════════════════════════════════════════
+   ADVANCED MODE
+════════════════════════════════════════════════ */
+function buildAdvFlourSelect() {
+  const sel = document.getElementById('adv-flour-select');
+  sel.innerHTML = '';
+  Object.keys(FLOURS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if (name === state.adv.flour) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function changeAdv(field, delta) {
+  if (field === 'pizzas') {
+    state.adv.pizzas = Math.max(1, Math.min(8, state.adv.pizzas + delta));
+    document.getElementById('adv-pizza-display').textContent = state.adv.pizzas;
+  }
+  advRecalc();
+}
+
+function setAdvBall(b) {
+  state.adv.ball = b;
+  [240,270,300].forEach(v => document.getElementById('adv-ball-'+v).classList.toggle('active', v === b));
+  advRecalc();
+}
+
+function setAdvTime(t) {
+  state.adv.tiempo = t;
+  [8,24,48].forEach(v => document.getElementById('adv-time-'+v).classList.toggle('active', v === t));
+  // Update flour select to only show valid flours
+  updateAdvFlourSelectForTime(t);
+  document.getElementById('adv-temp-group').classList.toggle('hidden', t === 8);
+  advRecalc();
+}
+
+function updateAdvFlourSelectForTime(t) {
+  const sel = document.getElementById('adv-flour-select');
+  const current = sel.value;
+  sel.innerHTML = '';
+  Object.entries(FLOURS).forEach(([name, data]) => {
+    if (data.recipes[t]) {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      if (name === current && data.recipes[t]) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  });
+  // If current flour not valid for this time, pick first valid
+  if (!FLOURS[sel.value]?.recipes[t]) sel.selectedIndex = 0;
+  state.adv.flour = sel.value;
+  renderAdvFlourSpecs();
+}
+
+function setAdvSeason(s) {
+  state.adv.season = s;
+  ['invierno','verano'].forEach(v => document.getElementById('adv-sea-'+v).classList.toggle('active', v === s));
+  advRecalc();
+}
+
+function advTempChange() {
+  state.adv.temp = parseInt(document.getElementById('adv-temp-slider').value);
+  document.getElementById('adv-temp-display').textContent = state.adv.temp + ' °C';
+  advRecalc();
+}
+
+function advRecalc() {
+  state.adv.flour = document.getElementById('adv-flour-select').value;
+  renderAdvFlourSpecs();
+
+  const result = calcIngredients({
+    pizzas:      state.adv.pizzas,
+    ball:        state.adv.ball,
+    tiempo:      state.adv.tiempo,
+    flour:       state.adv.flour,
+    season:      state.adv.season,
+    yeastDry:    state.adv.yeastDry,
+    hidratacion: state.adv.hidratacion
+  });
+
+  const metodLabel = state.adv.metodo === 'mano' ? '🤲 Mano' : '⚙️ Amasadora';
+  document.getElementById('results-summary-adv').innerHTML =
+    `<span>🍕 ${state.adv.pizzas} pizzas</span><span>⚖️ ${state.adv.ball}g/bola</span><span>💧 ${state.adv.hidratacion}%</span><span>${metodLabel}</span>`;
+
+  renderIngredients('ingredients-adv', result, state.adv.yeastDry);
+  renderFermGuide('ferm-guide-adv', state.adv.tiempo, state.adv.temp);
+  highlightFermTableRow(state.adv.temp);
+}
+
+function renderAdvFlourSpecs() {
+  const flour = FLOURS[state.adv.flour];
+  if (!flour) return;
+  document.getElementById('adv-flour-specs').innerHTML = `
+    <div class="flour-specs-title">Ficha técnica</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="nivel-badge ${flour.nivel}">${nivelLabel(flour.nivel)}</span>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">${flour.descripcion}</div>
+    <div class="specs-chips">${flour.specs.map(s=>`<span class="spec-chip">${s}</span>`).join('')}</div>
+  `;
+}
+
+/* ════════════════════════════════════════════════
+   FERMENTATION TABLE
+════════════════════════════════════════════════ */
+function buildFermTable() {
+  const tbody = document.getElementById('ferm-table-body');
+  tbody.innerHTML = '';
+  FERMENTATION.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.id = 'ferm-row-' + row.temp;
+    tr.innerHTML = `
+      <td class="temp-cell">${row.temp} °C</td>
+      <td>${row.puntata}</td>
+      <td>${row.appretto24}</td>
+      <td>${row.appretto48}</td>
+      <td>${row.amb24}</td>
+      <td>${row.amb48}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function highlightFermTableRow(temp) {
+  document.querySelectorAll('#ferm-table-body tr').forEach(r => r.classList.remove('highlighted'));
+  const row = document.getElementById('ferm-row-' + temp);
+  if (row) row.classList.add('highlighted');
+}
+
+/* ════════════════════════════════════════════════
+   CALCULATION
+════════════════════════════════════════════════ */
+function calcIngredients({ pizzas, ball, tiempo, flour, season, yeastDry, hidratacion }) {
+  const data  = FLOURS[flour];
+  if (!data || !data.recipes[tiempo]) return null;
+  const recipe = data.recipes[tiempo][season];
+  const scale  = (pizzas * ball) / (3 * 240);
+  const hid    = (hidratacion || 57) / 100;
+  const harina = Math.round(450 * scale);
+  const agua   = Math.round(harina * hid);
+  const lf     = Math.round(recipe.lf  * scale * 100) / 100;
+  const ld     = Math.round(recipe.ld  * scale * 100) / 100;
+  const sal    = Math.round(recipe.sal * scale * 10)  / 10;
+  return { harina, agua, lf, ld, sal, scale, recipe, hidratacion: hidratacion || 57 };
+}
+
+/* ════════════════════════════════════════════════
+   RENDER INGREDIENTS
+════════════════════════════════════════════════ */
+function renderIngredients(targetId, result, yeastDry) {
+  const el = document.getElementById(targetId);
+  if (!result) { el.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">No hay datos para esta combinación.</p>'; return; }
+  const yeastVal  = yeastDry ? result.ld : result.lf;
+  const yeastName = yeastDry ? 'Levadura seca' : 'Levadura fresca';
+  const yeastIcon = yeastDry ? '🧪' : '🦠';
+  el.innerHTML = `
+    <div class="ing-card">
+      <div class="ing-icon">🌾</div>
+      <span class="ing-amount">${result.harina}</span>
+      <span class="ing-unit">g</span>
+      <span class="ing-name">Harina</span>
+    </div>
+    <div class="ing-card">
+      <div class="ing-icon">💧</div>
+      <span class="ing-amount">${result.agua}</span>
+      <span class="ing-unit">g</span>
+      <span class="ing-name">Agua</span>
+    </div>
+    <div class="ing-card">
+      <div class="ing-icon">${yeastIcon}</div>
+      <span class="ing-amount">${yeastVal}</span>
+      <span class="ing-unit">g</span>
+      <span class="ing-name">${yeastName}</span>
+    </div>
+    <div class="ing-card">
+      <div class="ing-icon">🧂</div>
+      <span class="ing-amount">${result.sal}</span>
+      <span class="ing-unit">g</span>
+      <span class="ing-name">Sal</span>
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════════
+   RENDER FERMENTATION GUIDE
+════════════════════════════════════════════════ */
+function renderFermGuide(targetId, tiempo, temp) {
+  const el = document.getElementById(targetId);
+  if (tiempo === 8) {
+    el.innerHTML = `
+      <div class="ferm-guide ferm-guide-8h">
+        <div class="ferm-guide-title">⏱ Proceso de 8 horas</div>
+        <div class="ferm-steps">
+          <div class="ferm-step">
+            <div class="ferm-step-icon">🌡️</div>
+            <span class="ferm-step-time">8 h</span>
+            <span class="ferm-step-label">Fermentación en bloque</span>
+            <span class="ferm-step-hint">Toda la fermentación a temperatura ambiente, sin frigorífico</span>
+          </div>
+          <div class="ferm-step">
+            <div class="ferm-step-icon">⚽</div>
+            <span class="ferm-step-time">45 min</span>
+            <span class="ferm-step-label">Hacer las bolas</span>
+            <span class="ferm-step-hint">Divide y bolea. Deja reposar 45 min antes de estirar</span>
+          </div>
+        </div>
+        <div class="ferm-rec ferm-rec-ok">
+          <span class="ferm-rec-icon">👍</span>
+          <span>Opción rápida. Buen resultado para hornear el mismo día.</span>
+        </div>
+      </div>`;
+    return;
+  }
+  if (!temp) { el.innerHTML = ''; return; }
+  const row = FERMENTATION.find(r => r.temp === temp);
+  if (!row) { el.innerHTML = ''; return; }
+
+  const appretto = tiempo === 24 ? row.appretto24 : row.appretto48;
+  const amb      = tiempo === 24 ? row.amb24      : row.amb48;
+  const isBest   = tiempo === 48;
+
+  el.innerHTML = `
+    <div class="ferm-guide">
+      <div class="ferm-guide-title">⏱ Proceso de ${tiempo} horas a ${temp} °C</div>
+      <div class="ferm-steps ferm-steps-flow">
+
+        <div class="ferm-step">
+          <div class="ferm-step-num">1</div>
+          <div class="ferm-step-icon">🌡️</div>
+          <span class="ferm-step-time">${row.puntata}</span>
+          <span class="ferm-step-label">Fermentación en bloque</span>
+          <span class="ferm-step-hint">La masa reposa entera a temperatura ambiente</span>
+        </div>
+
+        <div class="ferm-arrow">→</div>
+
+        <div class="ferm-step">
+          <div class="ferm-step-num">2</div>
+          <div class="ferm-step-icon">🧊</div>
+          <span class="ferm-step-time">${appretto}</span>
+          <span class="ferm-step-label">Frigorífico</span>
+          <span class="ferm-step-hint">La masa fermenta lentamente en frío</span>
+        </div>
+
+        <div class="ferm-arrow">→</div>
+
+        <div class="ferm-step">
+          <div class="ferm-step-num">3</div>
+          <div class="ferm-step-icon">🏠</div>
+          <span class="ferm-step-time">${amb}</span>
+          <span class="ferm-step-label">Sacar del frío</span>
+          <span class="ferm-step-hint">Atempera la masa antes de manipularla</span>
+        </div>
+
+        <div class="ferm-arrow">→</div>
+
+        <div class="ferm-step">
+          <div class="ferm-step-num">4</div>
+          <div class="ferm-step-icon">⚽</div>
+          <span class="ferm-step-time">45 min</span>
+          <span class="ferm-step-label">Hacer las bolas</span>
+          <span class="ferm-step-hint">Divide, bolea y deja reposar tapadas antes de estirar</span>
+        </div>
+
+      </div>
+      <div class="ferm-rec ${isBest ? 'ferm-rec-best' : 'ferm-rec-good'}">
+        <span class="ferm-rec-icon">${isBest ? '⭐' : '👍'}</span>
+        <span>${isBest
+          ? '<strong>Resultado óptimo.</strong> 48 horas en frío desarrolla más sabor, mejor textura y un cornicione más aireado.'
+          : '<strong>Buen resultado.</strong> 24 horas en frío es una fermentación equilibrada y suficiente para la mayoría de hornos domésticos.'
+        }</span>
+      </div>
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════ */
+function nivelLabel(n) {
+  return n === 'principiante' ? 'Fácil' : n === 'intermedio' ? 'Intermedia' : 'Avanzada';
+}
+
+function shakeEl(id) {
+  const el = document.getElementById(id);
+  el.style.animation = 'none';
+  setTimeout(() => el.style.animation = 'shake 0.4s ease', 10);
+}
+
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
