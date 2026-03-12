@@ -841,6 +841,46 @@
   .mt-24 { margin-top: 24px; }
   .text-center { text-align: center; }
 
+  /* ─── YOUTUBE BANNER ────────────────────────────────────── */
+  .yt-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d0000 100%);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid rgba(255,0,0,0.2);
+  }
+  .yt-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255,0,0,0.2);
+    border-color: rgba(255,0,0,0.4);
+  }
+  .yt-banner-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    background: #FF0000;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(255,0,0,0.4);
+  }
+  .yt-banner-icon svg { width: 22px; height: 22px; color: #fff; }
+  .yt-banner-text { display: flex; flex-direction: column; gap: 3px; }
+  .yt-banner-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .yt-banner-sub {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+  }
+
   /* ─── KNEADING METHOD CARDS ─────────────────────────────── */
   .knead-cards {
     display: grid;
@@ -1350,6 +1390,18 @@
           <span class="note-icon">💡</span>
           <span>Con altas hidrataciones (75%) no es recomendable largas fermentaciones. Asegúrate de tener una harina de gran fuerza.</span>
         </div>
+
+        <a href="https://www.youtube.com/watch?v=9q-ywCP2Jpk&list=PLjxsKxqZcqK6yhaD9e9yFjWcI5rZxmhM6" target="_blank" rel="noopener" class="yt-banner">
+          <div class="yt-banner-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/>
+            </svg>
+          </div>
+          <div class="yt-banner-text">
+            <span class="yt-banner-title">¿Primera vez haciendo pizza?</span>
+            <span class="yt-banner-sub">Mira el curso rápido de Papapizzero en YouTube →</span>
+          </div>
+        </a>
 
         <div class="wizard-nav" style="justify-content:center;margin-top:24px;">
           <button class="btn btn-ghost" onclick="resetWizard()">← Calcular de nuevo</button>
