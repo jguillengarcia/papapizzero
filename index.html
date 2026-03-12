@@ -992,6 +992,19 @@
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 4px;
   }
+  .ferm-step-time-secondary {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brown);
+    background: rgba(139,69,19,0.1);
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
   .ferm-rec {
     display: flex; align-items: flex-start; gap: 10px;
     margin-top: 14px;
@@ -2097,12 +2110,12 @@ function renderFermGuide(targetId, tiempo, temp) {
 
         <div class="ferm-arrow">→</div>
 
-        <div class="ferm-step">
+        <div class="ferm-step ferm-step-timing">
           <div class="ferm-step-num">3</div>
           <div class="ferm-step-icon">🏠</div>
-          <span class="ferm-step-time">${amb}</span>
-          <span class="ferm-step-label">Sacar del frío</span>
-          <span class="ferm-step-hint">Atempera la masa antes de manipularla</span>
+          <span class="ferm-step-label">Saca del frigo</span>
+          <span class="ferm-step-time-secondary">${amb} antes de hornear</span>
+          <span class="ferm-step-hint">Cuando falten ${amb} para comer, saca la masa del frigorífico y déjala a temperatura ambiente</span>
         </div>
 
         <div class="ferm-arrow">→</div>
@@ -2110,9 +2123,9 @@ function renderFermGuide(targetId, tiempo, temp) {
         <div class="ferm-step">
           <div class="ferm-step-num">4</div>
           <div class="ferm-step-icon">⚽</div>
-          <span class="ferm-step-time">45 min</span>
+          <span class="ferm-step-time">+45 min</span>
           <span class="ferm-step-label">Hacer las bolas</span>
-          <span class="ferm-step-hint">Divide, bolea y deja reposar tapadas antes de estirar</span>
+          <span class="ferm-step-hint">A los 45 min de sacarla, divide y bolea. Deja reposar tapadas hasta hornear</span>
         </div>
 
       </div>
