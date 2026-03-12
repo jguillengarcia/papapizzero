@@ -841,6 +841,52 @@
   .mt-24 { margin-top: 24px; }
   .text-center { text-align: center; }
 
+  /* ─── BOLA STRIP ─────────────────────────────────────────── */
+  .bola-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(192,57,43,0.07), rgba(232,150,12,0.07));
+    border: 1px solid rgba(192,57,43,0.15);
+    border-radius: var(--radius-sm);
+    padding: 14px 20px;
+    margin-bottom: 4px;
+  }
+  .bola-strip-left {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .bola-icon-wrap {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .bola-text { display: flex; flex-direction: column; gap: 2px; }
+  .bola-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .bola-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .bola-weight {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .bola-weight span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 2px;
+  }
+
   /* ─── YOUTUBE BANNER ────────────────────────────────────── */
   .yt-banner {
     display: flex;
@@ -1383,6 +1429,8 @@
         </div>
 
         <div class="ingredient-grid" id="ingredients-wiz"></div>
+
+        <div class="bola-strip" id="bola-strip-wiz"></div>
 
         <div id="ferm-guide-wiz"></div>
 
@@ -1988,6 +2036,7 @@ function calculateAndShow() {
     `<span>🍕 ${state.pizzas} pizzas</span><span>🌾 ${state.flour}</span><span>💧 ${state.hidratacion}%</span><span>${metodLabel}</span><span>${seaLabel}</span><span>⏱ ${timeLabel}</span>`;
 
   renderIngredients('ingredients-wiz', result, false);
+  renderBolaStrip('bola-strip-wiz', state.pizzas, 240);
   renderFermGuide('ferm-guide-wiz', state.tiempo, state.temp);
 
   goStep(4);
@@ -2215,6 +2264,21 @@ function renderIngredients(targetId, result, yeastDry) {
 /* ════════════════════════════════════════════════
    RENDER FERMENTATION GUIDE
 ════════════════════════════════════════════════ */
+function renderBolaStrip(targetId, pizzas, ballWeight) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="bola-strip-left">
+      <div class="bola-icon-wrap">⚽</div>
+      <div class="bola-text">
+        <span class="bola-label">Peso por bola</span>
+        <span class="bola-desc">Divide la masa en ${pizzas} parte${pizzas > 1 ? 's' : ''} iguales de este peso</span>
+      </div>
+    </div>
+    <div class="bola-weight">${ballWeight}<span>g</span></div>
+  `;
+}
+
 function renderFermGuide(targetId, tiempo, temp) {
   const el = document.getElementById(targetId);
   if (tiempo === 8) {
