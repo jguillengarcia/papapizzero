@@ -1839,7 +1839,7 @@ function updateProgress(n) {
 }
 
 function changePizzas(delta) {
-  state.pizzas = Math.max(1, Math.min(8, state.pizzas + delta));
+  state.pizzas = Math.max(1, Math.min(50, state.pizzas + delta));
   document.getElementById('pizza-count-display').textContent = state.pizzas;
 }
 
@@ -2093,7 +2093,7 @@ function buildAdvFlourSelect() {
 
 function changeAdv(field, delta) {
   if (field === 'pizzas') {
-    state.adv.pizzas = Math.max(1, Math.min(8, state.adv.pizzas + delta));
+    state.adv.pizzas = Math.max(1, Math.min(50, state.adv.pizzas + delta));
     document.getElementById('adv-pizza-display').textContent = state.adv.pizzas;
   }
   advRecalc();
